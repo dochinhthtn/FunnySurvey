@@ -158,7 +158,7 @@ class SurveyComponent {
         }
     }
 
-    static async showOwnSurveys(){
+    static async showOwnSurveys() {
         $('#main-content').html(this.surveyIndex);
         let surveys = await $.get('/survey/management');
         for (let survey of surveys) {
@@ -179,13 +179,13 @@ class SurveyComponent {
                         <i class="fa fa-calendar"></i> ${new Date(survey.dateModified).toLocaleString()}
                     </div>
                 </div>`);
-        }        
+        }
     }
 
-    static async showSurveyEditor(surveyId = ''){
+    static async showSurveyEditor(surveyId = '') {
         $("#main-content").html(this.surveyEditor);
 
-        if(surveyId){
+        if (surveyId) {
             $('.survey-editor').append(`
                 <div class="danger-zone">
                     <button class="btn btn-danger btn-sm" onclick="SurveyEditorHandler.deleteSurvey(${surveyId})"><i class="fa fa-trash-o"></i> Remove thi survey</button>
@@ -202,24 +202,24 @@ class SurveyComponent {
         $(".form-edit-survey").find("[name='description']").val(survey.description);
 
         let questions = data.questions;
-        questions.forEach(function(question){
+        questions.forEach(function (question) {
             SurveyEditorHandler.addQuestion(question);
         });
     }
 
-    static async showSurveyAnswerSheet(surveyId){
-        if(!surveyId) return;
+    static async showSurveyAnswerSheet(surveyId) {
+        if (!surveyId) return;
 
         $("#main-content").html(this.surveyAnswerSheet);
 
-        $(".btn-show-result").click(function(){
+        $(".btn-show-result").click(function () {
             SurveyComponent.showSurveyResult(surveyId);
         });
 
         let data = await $.get('/survey/answer/' + surveyId);
-        
+
         let survey = data.survey;
-        if(!survey){
+        if (!survey) {
             $("#main-content").html('<h1>Sign in to answer this survey.</h1>');
             return;
         }
@@ -229,26 +229,29 @@ class SurveyComponent {
         $(".survey-info").find('.survey-hash-tag').append(survey.hashTag);
         $(".survey-info").find('.survey-vote-number').append(survey.voteNumber);
         $(".survey-info").find('.survey-author').append(survey.ownerId);
-        $(".survey-info").find('.survey-date-modified').append(new Date(survey.dateModified).toLocaleString() );
+        $(".survey-info").find('.survey-date-modified').append(new Date(survey.dateModified).toLocaleString());
 
         let questions = data.questions;
-        questions.forEach(function(question){
+        questions.forEach(function (question) {
             let questionData = question.data;
             let questionHTML = `
             <div class="question">
                 <h5 class="question-content">${questionData.content}</h5>
             `;
 
-            if(questionData.type == 'Text Question'){
+            if (questionData.type == 'Text Question') {
                 questionHTML += `<textarea name="question-${question.id}" cols="30" rows="4" class="form-control">${question.answer}</textarea>`;
             } else {
                 let inputType = (questionData.type == 'Single-Choice Question') ? 'radio' : 'checkbox';
                 let answer = question.answer.split(',');
-                questionData.choices.forEach(function(choice, index){
-                    let found = answer.findIndex(function(item){
-                        return item == index;
-                    });
-                    let checked = (found >= 0) ? 'checked' : '';
+                // console.log(answer);
+                questionData.choices.forEach(function (choice, index) {
+                    // let found = answer.findIndex(function (item) {
+                    //     console.log(item);
+                    //     return item == index;
+                    // });
+
+                    let checked = (answer.includes(index + "")) ? 'checked' : '';
                     questionHTML += `
                     <div class="input-group mb-3">
                         <div class="input-group-prepend">
@@ -267,37 +270,37 @@ class SurveyComponent {
         });
     }
 
-    static async showSurveyResult(surveyId, viewArea = '#main-content'){
-        if(!surveyId) return;
+    static async showSurveyResult(surveyId, viewArea = '#main-content') {
+        if (!surveyId) return;
 
         $(viewArea).html(this.surveyResult);
         let data = await $.get('/survey/result/' + surveyId);
-        
+
         let survey = data.survey;
-        if(!survey){
+        if (!survey) {
             $("#main-content").html('<h1>Sign in to answer this survey.</h1>');
             return;
         }
-        
+
         $(".survey-info").find('.survey-title').html(survey.title);
         $(".survey-info").find('.survey-description').html(survey.description);
         $(".survey-info").find('.survey-hash-tag').append(survey.hashTag);
         $(".survey-info").find('.survey-vote-number').append(survey.voteNumber);
         $(".survey-info").find('.survey-author').append(survey.ownerId);
-        $(".survey-info").find('.survey-date-modified').append(new Date(survey.dateModified).toLocaleString() );
+        $(".survey-info").find('.survey-date-modified').append(new Date(survey.dateModified).toLocaleString());
 
         $("#form-report").find("[name='surveyId']").val(survey.id);
 
         // show result of each question
         let questions = data.questions;
-        questions.forEach(function(question){
+        questions.forEach(function (question) {
             let questionNode = $(`
                 <div class="question">
                     <h5 class="question-content">${question.content}</h5>
                 </div>
             `);
 
-            if(question.type == 'Text Question'){
+            if (question.type == 'Text Question') {
                 let html = `
                 <table class="table table-striped">
                     <thead>
@@ -312,7 +315,7 @@ class SurveyComponent {
                     html += `
                         <tr>
                             <td>${answer.content}</td>
-                            <td>${ new Date(answer.dateModified).toLocaleString() }</td>
+                            <td>${ new Date(answer.dateModified).toLocaleString()}</td>
                         </tr>
                     `;
                 });
@@ -329,9 +332,9 @@ class SurveyComponent {
             $('.survey-statistic').append(questionNode);
         });
 
-        questions.forEach(function(question){
-            if(question.type == 'Text Question') return;
-            let ctx = document.getElementById("question-"+question.id);
+        questions.forEach(function (question) {
+            if (question.type == 'Text Question') return;
+            let ctx = document.getElementById("question-" + question.id);
             let myChart = new Chart(ctx, {
                 type: 'horizontalBar',
                 data: {
@@ -357,18 +360,18 @@ class SurveyComponent {
         });
     }
 
-    static async searchSurveys(event){
+    static async searchSurveys(event) {
         event.preventDefault();
         let keyword = $("#form-search-surveys").find("#keyword").val().trim();
-        if(keyword == ''){
+        if (keyword == '') {
             alert('Input your keyword to search');
             return;
         }
 
-        let surveys = await $.post('/survey/search', {keyword: keyword});
+        let surveys = await $.post('/survey/search', { keyword: keyword });
         $('#main-content').html(this.surveyIndex);
         $('#main-content').prepend(`<h3>Search for <i>${keyword}</i>: ${surveys.length} results</h3>`);
-        
+
         for (let survey of surveys) {
             $('.surveys-container').append(`
                 <div class="survey-container">
@@ -386,26 +389,26 @@ class SurveyComponent {
                         <i class="fa fa-calendar"></i> ${new Date(survey.dateModified).toLocaleString()}
                     </div>
                 </div>`);
-        }        
+        }
 
     }
 
-    static async deleteSurvey(surveyId){
-        if(!surveyId) return;
+    static async deleteSurvey(surveyId) {
+        if (!surveyId) return;
 
         let myConfirm = confirm('Are you sure to delete this survey?');
 
-        if(!myConfirm) return;
+        if (!myConfirm) return;
 
         let result = await $.ajax({
             url: 'survey/delete/' + surveyId,
             type: 'DELETE'
         });
 
-        if(result.code == 1){
+        if (result.code == 1) {
             ReportComponent.showReports();
         }
 
-        
+
     }
 }
