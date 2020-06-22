@@ -5,10 +5,12 @@ class HomeController extends Controller{
         let currentUser = req.currentUser;
 
         let users = await require('../models/User').selectWhere('all');
-        let usersNumber = users.length;
+        let usersNumber = users.length;     
 
         let surveys = await require('../models/Survey').selectWhere('all');
         let surveysNumber = surveys.length;
+
+        console.log(req.constructor.name, res.constructor.name);
 
         res.render('app', {
             currentUser: currentUser, 
